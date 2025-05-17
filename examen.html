@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Examen interactivo de Bioquímica – Respiratorio y Renal</title>
+<style>
+    body { font-family: Arial, Helvetica, sans-serif; background: #eef2f5; color: #333; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 2rem; }
+    #quiz { background: #fff; max-width: 700px; width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.1); padding: 2rem; }
+    h2 { margin-top: 0; color: #444; }
+    #nav { text-align: center; margin: 1rem 0; }
+    .nav-dot { display: inline-block; margin: 0 0.2rem; width: 28px; height: 28px; line-height: 28px; border-radius: 50%; background: #ddd; color: #555; cursor: pointer; font-size: 0.9rem; }
+    .nav-dot.active { background: #007bff; color: #fff; }
+    .option { display: block; margin: 0.6rem 0; padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+    .option:hover { background: #f0f4ff; }
+    input[type=radio] { margin-right: 0.6rem; cursor: pointer; }
+    #controls { display: flex; justify-content: space-between; margin-top: 1.5rem; }
+    button { padding: 0.6rem 1.2rem; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+    #prev { background: #6c757d; color: #fff; }
+    #next { background: #007bff; color: #fff; }
+    #submit { background: #28a745; color: #fff; margin-top: 1rem; width: 100%; }
+    #feedback { margin-top: 1rem; font-weight: bold; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<div id="quiz">
+    <h2 id="counter"></h2>
+    <div id="nav"></div>
+    <p id="question"></p>
+    <div id="options"></div>
+    <button id="submit">Responder</button>
+    <div id="feedback"></div>
+    <div id="controls">
+        <button id="prev">Anterior</button>
+        <button id="next">Siguiente</button>
+    </div>
+</div>
+<script>
+const preguntas = [
+    {q: "¿Cuál de las siguientes afirmaciones explica mejor el fundamento bioquímico del efecto Bohr?", o: [
+        "El oxígeno se une con mayor afinidad a la hemoglobina en condiciones de pH bajo y alta pCO₂",
+        "La hemoglobina se une con mayor afinidad al oxígeno cuando el pH disminuye y aumenta la concentración de H⁺",
+        "Un aumento en H⁺ desplaza la curva de disociación de la oxihemoglobina hacia la derecha, facilitando la liberación de O₂",
+        "La afinidad de la hemoglobina por el oxígeno es independiente del pH y CO₂"
+    ], c: 2},
+    {q: "¿Qué isoforma enzimática convierte biliverdina en bilirrubina durante el catabolismo del hemo?", o: [
+        "Hemo oxigenasa",
+        "NADPH bilirrubina transferasa",
+        "Biliverdina reductasa",
+        "Glucuronil transferasa"
+    ], c: 2},
+    {q: "¿Cuál de los siguientes fosfolípidos representa el componente más abundante y funcionalmente crítico del surfactante pulmonar?", o: [
+        "Esfingomielina",
+        "Fosfatidilinositol",
+        "Fosfatidilcolina (DPPC)",
+        "Fosfatidiletanolamina"
+    ], c: 2},
+    {q: "El grupo hemo de la hemoglobina se sintetiza a partir de:", o: [
+        "Succinil-CoA y ácido aspártico",
+        "Glutamato y acetil-CoA",
+        "Succinil-CoA y glicina",
+        "Propionil-CoA y serina"
+    ], c: 2},
+    {q: "¿Qué tipo de proteínas surfactantes participan en la respuesta inmune innata del pulmón?", o: [
+        "SP-A y SP-D",
+        "SP-B y SP-C",
+        "Fosfatidilglicerol y colesterol",
+        "Colágeno tipo IV y elastina"
+    ], c: 0},
+    {q: "En relación con la tensión superficial alveolar, el surfactante pulmonar actúa:", o: [
+        "Aumentando la tensión superficial para evitar colapso alveolar",
+        "Disminuyendo la tensión superficial, estabilizando los alveolos y previniendo atelectasia",
+        "Disminuyendo el gradiente de presión entre alveólos y capilares",
+        "Favoreciendo la formación de macrófagos alveolares"
+    ], c: 1},
+    {q: "¿Cuál es la relación mínima de lecitina/esfingomielina en el líquido amniótico que se considera indicativa de madurez pulmonar fetal?", o: [
+        "<0.5",
+        "1.0",
+        "2.0",
+        "0.9"
+    ], c: 2},
+    {q: "¿Qué afirmación es cierta sobre el intercambio gaseoso en el alvéolo?", o: [
+        "El oxígeno se transporta libremente sin necesidad de proteínas",
+        "La mayor parte del CO₂ se transporta como bicarbonato en los eritrocitos",
+        "La difusión de CO₂ es más lenta que la del O₂",
+        "El CO₂ necesita hemoglobina para poder atravesar la membrana alveolar"
+    ], c: 1},
+    {q: "¿Qué mecanismo bioquímico explica el desplazamiento de la curva de disociación de oxígeno hacia la izquierda?", o: [
+        "Aumento de temperatura",
+        "Disminución del pH",
+        "Disminución de 2,3-BPG",
+        "Aumento de CO₂"
+    ], c: 2},
+    {q: "El fosfatidilglicerol en el surfactante pulmonar fetal:", o: [
+        "Aparece antes de las 24 semanas y se mantiene constante",
+        "Es el principal marcador bioquímico temprano de maduración pulmonar",
+        "Se incrementa solo si hay infecciones intrauterinas",
+        "Disminuye progresivamente durante la gestación"
+    ], c: 1},
+    {q: "¿Cuál de las siguientes enzimas es crítica para el “clearance” de líquido pulmonar durante la transición fetal a neonatal?", o: [
+        "Anhidrasa carbónica",
+        "Glucuronil transferasa",
+        "Bombas de sodio epiteliales (ENaC)",
+        "Catecol-O-metiltransferasa"
+    ], c: 2},
+    {q: "Las proteínas SP-B y SP-C del surfactante:", o: [
+        "Son hidrofílicas y promueven la inmunidad innata",
+        "Son grandes, solubles y modulan la respuesta inmune",
+        "Son pequeñas, hidrofóbicas y fundamentales para la actividad tensoactiva",
+        "Se sintetizan por neumocitos tipo I"
+    ], c: 2},
+    {q: "¿Cuál es el principal efecto de los corticoides antenatales en el pulmón fetal?", o: [
+        "Aumentar la afinidad de la hemoglobina por el oxígeno",
+        "Inducir el crecimiento alveolar",
+        "Estimular la producción de surfactante por los neumocitos tipo II",
+        "Estimular la vasodilatación pulmonar"
+    ], c: 2},
+    {q: "¿Qué evento activa la secreción de surfactante desde los cuerpos lamelares?", o: [
+        "Hipoglucemia fetal",
+        "Hipoxia prolongada",
+        "Estímulos hormonales como cortisol y T3",
+        "Activación de receptores de acetilcolina"
+    ], c: 2},
+    {q: "En condiciones normales, ¿qué fracción del oxígeno transportado en sangre está químicamente disuelto en plasma?", o: [
+        "25%",
+        "10%",
+        "1.5%",
+        "40%"
+    ], c: 2}
+];
+
+let index = 0;
+const total = preguntas.length;
+const counter = document.getElementById('counter');
+const nav = document.getElementById('nav');
+const question = document.getElementById('question');
+const optionsDiv = document.getElementById('options');
+const submitBtn = document.getElementById('submit');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const feedback = document.getElementById('feedback');
+
+function letra(i) { return String.fromCharCode(65 + i); }
+
+function crearNav() {
+    nav.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'nav-dot';
+        dot.textContent = i + 1;
+        dot.addEventListener('click', () => { index = i; cargar(); });
+        nav.appendChild(dot);
+    }
+}
+
+function actualizarNav() {
+    Array.from(nav.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+    });
+}
+
+function cargar() {
+    const p = preguntas[index];
+    counter.textContent = `Pregunta ${index + 1} de ${total}`;
+    question.textContent = p.q;
+    optionsDiv.innerHTML = '';
+    p.o.forEach((texto, i) => {
+        const opt = document.createElement('label');
+        opt.className = 'option';
+        opt.innerHTML = `<input type="radio" name="opt" value="${i}">${letra(i)}. ${texto}`;
+        optionsDiv.appendChild(opt);
+    });
+    feedback.textContent = '';
+    submitBtn.disabled = false;
+    prevBtn.disabled = (index === 0);
+    nextBtn.disabled = (index === total - 1);
+    actualizarNav();
+}
+
+function responder() {
+    const sel = document.querySelector('input[name="opt"]:checked');
+    if (!sel) { alert('Selecciona una opción antes de continuar'); return; }
+    const elegido = parseInt(sel.value, 10);
+    const correcto = preguntas[index].c;
+    feedback.textContent = (elegido === correcto)
+        ? '✅ Correcto'
+        : `❌ Incorrecto. La respuesta correcta es: ${letra(correcto)}`;
+    submitBtn.disabled = true;
+}
+
+prevBtn.addEventListener('click', () => { if (index > 0) { index--; cargar(); } });
+nextBtn.addEventListener('click', () => { if (index < total - 1) { index++; cargar(); } });
+submitBtn.addEventListener('click', responder);
+
+crearNav();
+window.addEventListener('DOMContentLoaded', cargar);
+</script>
+</body>
+</html>
